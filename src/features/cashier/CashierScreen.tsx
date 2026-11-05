@@ -8,9 +8,12 @@ import type {
   AppRouteId,
   Category,
   ProductWithDetails,
+  SavedTransaction,
 } from '../../domain/types';
 import { CartDrawer } from './CartDrawer';
+import { CheckoutModal } from './CheckoutModal';
 import { ProductCustomizerModal } from './ProductCustomizerModal';
+import { TransactionSuccessModal } from './TransactionSuccessModal';
 import { useCart } from './useCart';
 
 interface CashierScreenProps {
@@ -32,6 +35,11 @@ export function CashierScreen({ onNavigate }: CashierScreenProps) {
   // Modal customizer state
   const [customizingProduct, setCustomizingProduct] =
     useState<ProductWithDetails | null>(null);
+
+  // Modal checkout & success state (P3)
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState<boolean>(false);
+  const [completedTransaction, setCompletedTransaction] =
+    useState<SavedTransaction | null>(null);
 
   const loadCatalog = useCallback(async () => {
     setIsLoading(true);
@@ -328,13 +336,25 @@ export function CashierScreen({ onNavigate }: CashierScreenProps) {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={cartManager.openCart}
-              className="flex min-h-10 items-center justify-center rounded-xl bg-white px-4 py-1.5 text-xs font-bold text-orange-900 shadow-sm active:bg-orange-50"
-            >
-              Lihat Draf Pesanan →
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={cartManager.openCart}
+                className="flex min-h-10 items-center justify-center rounded-xl bg-orange-800/80 px-3 py-1.5 text-xs font-semibold text-white shadow-xs active:bg-orange-900"
+              >
+                Lihat Draf
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  cartManager.closeCart();
+                  setIsCheckoutModalOpen(true);
+                }}
+                className="flex min-h-10 items-center justify-center rounded-xl bg-white px-3.5 py-1.5 text-xs font-bold text-orange-950 shadow-sm active:bg-orange-50"
+              >
+                Bayar →
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -353,7 +373,31 @@ export function CashierScreen({ onNavigate }: CashierScreenProps) {
       ) : null}
 
       {/* Cart Drawer */}
-      <CartDrawer cartManager={cartManager} />
+      <CartDrawer
+        cartManager={cartManager}
+        onCheckout={() => {
+          cartManager.closeCart();
+          setIsCheckoutModalOpen(true);
+        }}
+      />
+
+      {/* Modal Checkout (P3) */}
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        cartManager={cartManager}
+        onClose={() => setIsCheckoutModalOpen(false)}
+        onSuccess={(savedTx) => {
+          cartManager.clearCart();
+          setIsCheckoutModalOpen(false);
+          setCompletedTransaction(savedTx);
+        }}
+      />
+
+      {/* Modal Transaksi Sukses (P3) */}
+      <TransactionSuccessModal
+        transaction={completedTransaction}
+        onNewTransaction={() => setCompletedTransaction(null)}
+      />
     </div>
   );
 }

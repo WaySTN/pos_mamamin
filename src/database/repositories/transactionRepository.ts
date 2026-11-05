@@ -14,7 +14,7 @@ import type {
   TransactionStatus,
 } from '../../domain/types';
 import type { DatabaseService } from '../sqlite';
-import { DatabaseError, type SqlExecutor } from '../types';
+import { DatabaseError, type SqlExecutor, type SqlValue } from '../types';
 
 export interface CreateSaleOptionInput {
   readonly id: string;
@@ -333,14 +333,81 @@ export class TransactionRepository {
     });
   }
 
-  async getById(id: string): Promise<SavedTransaction | null> {
-    return this.loadByIdWithExecutor(this.db, id);
+  async getById(
+    id: string,
+    executor: SqlExecutor = this.db,
+  ): Promise<SavedTransaction | null> {
+    return this.loadByIdWithExecutor(executor, id);
+  }
+
+  async listTransactions(
+    filter: {
+      readonly dateFilter?: 'TODAY' | 'LAST_7_DAYS' | 'ALL';
+      readonly specificBusinessDate?: string;
+      readonly status?: TransactionStatus;
+      readonly searchReceipt?: string;
+      readonly limit?: number;
+      readonly offset?: number;
+      readonly includeDiagnostics?: boolean;
+    } = {},
+    executor: SqlExecutor = this.db,
+  ): Promise<readonly SavedTransaction[]> {
+    const conditions: string[] = [];
+    const params: SqlValue[] = [];
+
+    if (!filter.includeDiagnostics) {
+      conditions.push("business_date NOT LIKE 'DIAG-%'");
+    }
+
+    if (filter.specificBusinessDate) {
+      conditions.push('business_date = ?');
+      params.push(filter.specificBusinessDate);
+    } else if (filter.dateFilter === 'TODAY') {
+      const todayWib = getBusinessDateWib(Date.now());
+      conditions.push('business_date = ?');
+      params.push(todayWib);
+    } else if (filter.dateFilter === 'LAST_7_DAYS') {
+      const sevenDaysAgoWib = getBusinessDateWib(Date.now() - 7 * 86_400_000);
+      conditions.push('business_date >= ?');
+      params.push(sevenDaysAgoWib);
+    }
+
+    if (filter.status) {
+      conditions.push('status = ?');
+      params.push(filter.status);
+    }
+
+    if (filter.searchReceipt?.trim()) {
+      conditions.push('receipt_number LIKE ?');
+      params.push(`%${filter.searchReceipt.trim()}%`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const limit = filter.limit ?? 50;
+    const offset = filter.offset ?? 0;
+    params.push(limit, offset);
+
+    const rows = await executor.query<{ id: string }>(
+      `SELECT id FROM transactions ${whereClause} ORDER BY occurred_at_ms DESC LIMIT ? OFFSET ?;`,
+      params,
+    );
+
+    const result: SavedTransaction[] = [];
+    for (const row of rows) {
+      const tx = await this.loadByIdWithExecutor(executor, row.id);
+      if (tx) {
+        result.push(tx);
+      }
+    }
+
+    return result;
   }
 
   async voidTransaction(
     id: string,
     reason: string,
     voidedAtMs: number = Date.now(),
+    executor?: SqlExecutor,
   ): Promise<SavedTransaction> {
     const trimmedReason = reason.trim();
     if (!trimmedReason) {
@@ -350,7 +417,7 @@ export class TransactionRepository {
       throw new RangeError('voidedAtMs harus berupa integer epoch milidetik.');
     }
 
-    return this.db.withTransaction(async (tx) => {
+    const runVoid = async (tx: SqlExecutor) => {
       const existing = await this.loadByIdWithExecutor(tx, id);
       if (!existing) {
         throw new DatabaseError(
@@ -382,7 +449,12 @@ export class TransactionRepository {
         );
       }
       return updated;
-    });
+    };
+
+    if (executor) {
+      return runVoid(executor);
+    }
+    return this.db.withTransaction(runVoid);
   }
 
   async recordPrintAttemptBestEffort(input: {

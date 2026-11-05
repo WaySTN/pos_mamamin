@@ -10,6 +10,7 @@ import type {
 import { CashierScreen } from '../cashier/CashierScreen';
 import { P1DiagnosticPanel } from '../diagnostics/P1DiagnosticPanel';
 import type { P1DiagnosticsViewModel } from '../diagnostics/useP1Diagnostics';
+import { HistoryScreen } from '../history/HistoryScreen';
 import { MenuManagementScreen } from '../products/MenuManagementScreen';
 
 interface BaselineScreenProps {
@@ -120,9 +121,14 @@ export function BaselineScreen({
   const currentRouteMeta =
     APP_ROUTES.find((route) => route.id === activeRoute) ?? APP_ROUTES[0];
 
-  // Route 1: Kasir POS (P2)
+  // Route 1: Kasir POS (P2/P3)
   if (activeRoute === 'cashier') {
     return <CashierScreen onNavigate={onSelectRoute} />;
+  }
+
+  // Route 2: Riwayat Transaksi (P3)
+  if (activeRoute === 'transactions') {
+    return <HistoryScreen />;
   }
 
   // Route 2: Lainnya (Kelola Menu P2 & Diagnostik P1)

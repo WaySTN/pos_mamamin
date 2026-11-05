@@ -4,9 +4,10 @@ import type { UseCartReturn } from './useCart';
 
 interface CartDrawerProps {
   readonly cartManager: UseCartReturn;
+  readonly onCheckout: () => void;
 }
 
-export function CartDrawer({ cartManager }: CartDrawerProps) {
+export function CartDrawer({ cartManager, onCheckout }: CartDrawerProps) {
   const {
     cart,
     isCartOpen,
@@ -202,17 +203,23 @@ export function CartDrawer({ cartManager }: CartDrawerProps) {
             </div>
           </div>
 
-          <div className="mt-3 rounded-lg border border-slate-200 bg-white p-2.5 text-[11px] leading-relaxed text-slate-600">
-            ℹ️ <strong>Status Fase P2:</strong> Keranjang ini adalah draf pesanan kasir. Fitur finalisasi pembayaran (Tunai/QRIS) dan pencatatan transaksi penjualan resmi dijadwalkan pada <strong>Fase P3</strong>.
+          <div className="mt-4 space-y-2">
+            <button
+              type="button"
+              disabled={cart.items.length === 0}
+              onClick={onCheckout}
+              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-orange-700 px-4 py-2.5 text-sm font-bold text-white shadow-md active:bg-orange-800 disabled:bg-slate-300 disabled:shadow-none"
+            >
+              Bayar Sekarang ({formatRupiah(cart.grandTotalRupiah)}) →
+            </button>
+            <button
+              type="button"
+              onClick={closeCart}
+              className="min-h-10 w-full rounded-xl border border-slate-300 bg-white py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              + Tambah Menu Lain
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={closeCart}
-            className="mt-3 flex min-h-12 w-full items-center justify-center rounded-xl bg-orange-700 px-4 py-2 text-sm font-bold text-white shadow-sm active:bg-orange-800"
-          >
-            Lanjut Pilih Menu
-          </button>
         </div>
       </div>
     </div>
