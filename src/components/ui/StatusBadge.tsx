@@ -21,6 +21,10 @@ const STATUS_STYLES: Record<
     className: 'border-amber-300 bg-amber-50 text-amber-900',
     prefix: '[BELUM TERVERIFIKASI]',
   },
+  error: {
+    className: 'border-red-300 bg-red-50 text-red-900',
+    prefix: '[GAGAL]',
+  },
 };
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
@@ -35,4 +39,3 @@ export function StatusBadge({ status, label }: StatusBadgeProps) {
     </span>
   );
 }
-

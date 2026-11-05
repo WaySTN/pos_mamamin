@@ -171,15 +171,17 @@ APK release lazimnya muncul dalam `android/app/build/outputs/apk/release/`; loka
 
 ## Roadmap dan Status
 
-> Checklist ini adalah **target**, bukan klaim hasil saat ini. Tandai hanya setelah terdapat bukti pengujian.
+> Checklist ini adalah **status aktual berbasis pengujian nyata**. Pengujian cetak kertas fisik tidak ditandai selesai sebelum perangkat printer tersedia dan diuji langsung.
 
-- [x] P0 — Toolchain React/Capacitor, Android debug APK berjalan di HP via USB.
-- [ ] P1 — Proof of concept SQLite native dan cetak uji printer thermal fisik.
-- [ ] P2 — Master menu, katalog, aturan topping seblak yang dikonfirmasi owner.
-- [ ] P3 — Checkout atomik, metode pembayaran, riwayat, cetak dan cetak ulang.
-- [ ] P4 — Pengeluaran dan laporan harian/bulanan akurat.
-- [ ] P5 — Backup/restore, validasi, penanganan error dan pengujian offline.
-- [ ] P6 — Signed release APK, upgrade tanpa kehilangan data, dokumentasi final.
+- [x] **P0 — Toolchain & APK Baseline:** React, TypeScript, Vite, Tailwind CSS, Capacitor Android (`com.mamamin.pos`) berjalan online & offline di HP Android fisik via USB/ADB.
+- [x] **P1a — SQLite Native & Persistensi Offline:** `@capacitor-community/sqlite` terpasang, migrasi skema relasional v1 (12 tabel, 7 indeks, `PRAGMA foreign_keys = ON`), operasi CRUD atomik, rollback transaksi, serta ketahanan data lintas *force-stop* & *cold start* offline telah lulus uji di HP fisik.
+- [x] **P1b — Fondasi Struk 58 mm & Printer Mock:** Kontrak `PrinterAdapter`, `MockPrinterAdapter` (khusus dev), `ReceiptService`, payload ESC/POS dasar, serta preview struk 58 mm (Normal, `SALINAN`, `DIBATALKAN`) dari transaksi tersimpan di SQLite selesai dan teruji.
+- [ ] **P1c — Koneksi Bluetooth Classic SPP & Cetak Fisik 58 mm:** *Pending hardware verification* (`BLOCKED` menunggu pengadaan unit printer thermal fisik; tidak menghambat pengembangan modul P2–P5).
+- [ ] **P2 — Master Menu & Keranjang:** Kategori, katalog produk, kalkulasi integer, dan aturan topping seblak yang dikonfirmasi owner.
+- [ ] **P3 — Checkout & Riwayat Produksi:** Pembayaran Tunai & QRIS manual atomik, riwayat transaksi, detail snapshot, void beralasan, dan integrasi cetak/reprint.
+- [ ] **P4 — Pengeluaran & Laporan:** Pencatatan pengeluaran operasional serta rekap harian/bulanan WIB akurat + ekspor CSV.
+- [ ] **P5 — Keamanan Data:** Full backup ke luar HP (SAF/Sharesheet), inspeksi, dan restore tervalidasi.
+- [ ] **P6 — Rilis Produksi:** Pengujian end-to-end dengan printer fisik, *signed release APK*, uji upgrade tanpa kehilangan data, dan dokumentasi serah terima.
 
 ## Screenshot / Demo
 

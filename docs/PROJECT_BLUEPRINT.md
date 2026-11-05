@@ -673,6 +673,15 @@ Contoh adalah **simulasi**. Tata letak/karakter/penanganan nama topping panjang 
 - Encoding nama panjang, topping berulang, kertas 58 mm; tidak terpotong pada margin.
 - Dua transaksi berurutan tanpa menimpa struk sebelumnya.
 
+### 12.5 Evaluasi pilihan teknis bridge Android & penangguhan printer fisik
+
+Berdasarkan evaluasi arsitektur pada Fase P1 (Android target SDK 36 / Android 12+):
+
+1. **Mengapa bukan Web Bluetooth atau plugin BLE umum:** Printer thermal kasir 58 mm ekonomis mayoritas memakai **Bluetooth Classic SPP (RFCOMM UUID `00001101-0000-1000-8000-00805F9B34FB`)**, sedangkan Web Bluetooth API di Chromium/WebView dan plugin BLE (`@capacitor-community/bluetooth-le`) hanya mendukung GATT/BLE dan tidak menjamin kompatibilitas SPP. Plugin Cordova lawas banyak yang tidak terawat untuk izin runtime Android 12–16.
+2. **Pilihan teknis yang dipilih (Feasibility Plan):** Membuat **Capacitor local native plugin tipis berbahasa Kotlin/Java** langsung di proyek `android/` (`BluetoothAdapter.getBondedDevices()` + `BluetoothDevice.createRfcommSocketToServiceRecord(SPP_UUID)` + `OutputStream.write(escPosBytes)` dengan timeout terkelola di background thread), dipasangkan ke kontrak TypeScript `PrinterAdapter`.
+3. **Strategi izin minimal:** Karena printer dipasangkan (*paired*) satu kali lewat Pengaturan Bluetooth Android, aplikasi pada Android 12+ cukup meminta `android.permission.BLUETOOTH_CONNECT` saat runtime (tanpa `BLUETOOTH_SCAN` dan tanpa izin lokasi). Permission ini **belum ditambahkan** ke `AndroidManifest.xml` sebelum bridge native diaktifkan dan diuji dengan unit printer fisik.
+4. **Pemisahan lapisan saat perangkat belum tersedia:** Pembentukan teks/ESC-POS 58 mm (`receiptFormatter.ts`), orkestrasi transaksi tersimpan & audit `print_attempts` (`receiptService.ts`), serta kontrak `PrinterAdapter` + `MockPrinterAdapter` selesai dan diuji terpisah sehingga ketiadaan printer fisik tidak menghambat penyelesaian fitur inti POS.
+
 ---
 
 ## 13. Backup, restore, dan keamanan data
@@ -964,6 +973,15 @@ Setiap tahap sertakan singkat: `Selesai`, `Diuji di mana`, `Perintah + hasil`, `
 
 P2/P3 berfungsi pada HP asli, punya kategori yang benar, menu dapat diedit, checkout tunai dapat disimpan; sebelum live-use: uji printer dan backup (P5). Demo dengan data dummy dipisahkan dari penjualan riil, jangan menguji secara destruktif di database produksi.
 
+### 16.3 Pemisahan status implementasi saat printer fisik ditangguhkan
+
+Apabila perangkat printer thermal 58 mm fisik belum tersedia selama tahap pengembangan, pelaporan dan penyelesaian fitur dipisahkan secara tegas menjadi empat jalur agar fitur bisnis inti tidak terhambat namun tidak pernah mengklaim pengujian hardware semu:
+
+1. **Core POS (SQLite, katalog, checkout, riwayat, void, pengeluaran, laporan, backup/restore):** wajib selesai dan diuji penuh pada perangkat Android fisik.
+2. **Receipt generation & preview 58 mm:** wajib selesai dan diuji berdasarkan `SavedTransaction` nyata di SQLite (termasuk penanda `SALINAN` dan `DIBATALKAN` serta payload ESC/POS dasar).
+3. **Printer interface & mock (`PrinterAdapter` + `MockPrinterAdapter`):** wajib selesai dan diuji termasuk penanganan kegagalan tanpa menduplikasi transaksi.
+4. **Native Bluetooth Classic SPP connection & physical printing:** berstatus **`PENDING HARDWARE VERIFICATION` (`BLOCKED` untuk rilis final P6)** hingga unit printer fisik dibeli, dipasangkan, dan lulus uji cetak kertas nyata (§12.4).
+
 ---
 
 ## 17. Strategi testing dan test matrix
@@ -1140,6 +1158,8 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 | 2026-11-05 | Harga dan mekanisme seblak belum dipastikan; perlu konfirmasi owner. | Menghindari aturan bisnis fiktif. |
 | 2026-11-06 | Android `applicationId` / Capacitor `appId` dikonsistenkan menjadi `com.mamamin.pos`; lokasi blueprint dirapikan ke `docs/PROJECT_BLUEPRINT.md`. | Konsistensi konfigurasi & dokumentasi Fase P0. |
 | 2026-11-06 | Fase P0 terverifikasi pada perangkat pengembangan fisik POCO X6 Pro 5G (`2311DRK48G`, Android 16 / SDK 36) melalui USB/ADB, termasuk cold-start tanpa Wi-Fi & data seluler. | Bukti kelulusan exit gate P0. |
+| 2026-11-06 | Fase P1 SQLite Native (`@capacitor-community/sqlite@8.1.1`), migrasi skema v1 (12 tabel, 7 indeks, `PRAGMA foreign_keys = ON`), transaksi atomik/rollback, dan persistensi data lintas `am force-stop` + *cold start* offline lulus verifikasi pada POCO X6 Pro 5G (`mamamin_posSQLite.db`). | Bukti kelulusan exit gate SQLite Native P1. |
+| 2026-11-06 | Pengujian printer fisik 58 mm ditangguhkan sementara karena perangkat belum tersedia (`PENDING HARDWARE VERIFICATION`). Fondasi `PrinterAdapter`, `MockPrinterAdapter`, `ReceiptService`, dan formatter/preview struk 58 mm dari transaksi SQLite selesai; fitur P2–P5 dilanjutkan tanpa mengklaim cetak fisik berhasil. | Penyesuaian roadmap agar pengembangan Core POS tidak terhambat sambil menjaga kejujuran status hardware. |
 
 ---
 

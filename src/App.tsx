@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BottomNavigation } from './app/router';
 import type { AppRouteId, RuntimeEnvironmentInfo } from './domain/types';
 import { BaselineScreen } from './features/baseline/BaselineScreen';
+import { useP1Diagnostics } from './features/diagnostics/useP1Diagnostics';
 
 interface AppProps {
   readonly runtime: RuntimeEnvironmentInfo;
@@ -9,6 +10,7 @@ interface AppProps {
 
 export function App({ runtime }: AppProps) {
   const [activeRoute, setActiveRoute] = useState<AppRouteId>('cashier');
+  const diagnostics = useP1Diagnostics();
 
   return (
     <div className="flex min-h-dvh flex-col bg-slate-50 text-slate-900">
@@ -40,6 +42,7 @@ export function App({ runtime }: AppProps) {
         <BaselineScreen
           activeRoute={activeRoute}
           runtime={runtime}
+          diagnostics={diagnostics}
           onSelectRoute={setActiveRoute}
         />
       </main>
@@ -51,4 +54,3 @@ export function App({ runtime }: AppProps) {
     </div>
   );
 }
-

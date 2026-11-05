@@ -4,7 +4,7 @@ import type { RuntimeEnvironmentInfo } from '../domain/types';
 export const APP_METADATA = {
   appName: 'MamaMin POS',
   appId: 'com.mamamin.pos',
-  appVersion: '0.1.0-p0',
+  appVersion: '0.2.0-p1',
   timezone: 'Asia/Jakarta',
 } as const;
 
@@ -18,4 +18,3 @@ export function bootstrapRuntimeEnvironment(): RuntimeEnvironmentInfo {
     timezone: APP_METADATA.timezone,
   };
 }
-
