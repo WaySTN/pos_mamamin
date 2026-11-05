@@ -154,7 +154,7 @@ Langkah tinggi (rinci di Blueprint §19):
 3. Jalankan `npm run build` dan `npx cap sync android`.
 4. Buka proyek Android: `npx cap open android`.
 5. Android Studio → **Build → Generate Signed Bundle / APK** → pilih **APK**, lalu gunakan **keystore release milik pemilik proyek**.
-6. Simpan keystore dan password di tempat aman, **jangan commit ke Git**. Gunakan `applicationId` dan sertifikat signing yang sama untuk pembaruan berikutnya.
+6. Simpan keystore dan password di tempat aman, **jangan commit ke Git**. Gunakan `applicationId` (`com.mamamin.pos`) dan sertifikat signing yang sama untuk pembaruan berikutnya.
 7. Pasang APK release pada HP uji, pastikan bisa membuka data yang ada ketika di-upgrade, mencetak, backup, dan berjalan offline.
 
 APK release lazimnya muncul dalam `android/app/build/outputs/apk/release/`; lokasi final bergantung pengaturan Gradle. **Tidak perlu Play Store** untuk pemasangan internal, tetapi instalasi APK dari luar Play Store memerlukan persetujuan pengguna pada Android.
@@ -173,7 +173,7 @@ APK release lazimnya muncul dalam `android/app/build/outputs/apk/release/`; loka
 
 > Checklist ini adalah **target**, bukan klaim hasil saat ini. Tandai hanya setelah terdapat bukti pengujian.
 
-- [ ] P0 — Toolchain React/Capacitor, Android debug APK berjalan di HP via USB.
+- [x] P0 — Toolchain React/Capacitor, Android debug APK berjalan di HP via USB.
 - [ ] P1 — Proof of concept SQLite native dan cetak uji printer thermal fisik.
 - [ ] P2 — Master menu, katalog, aturan topping seblak yang dikonfirmasi owner.
 - [ ] P3 — Checkout atomik, metode pembayaran, riwayat, cetak dan cetak ulang.

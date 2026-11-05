@@ -3,10 +3,11 @@ node_modules/
 .pnp
 .pnp.js
 
-# Build outputs
+# Build outputs & test coverage
 dist/
 dist-ssr/
 build/
+coverage/
 *.local
 
 # Logs
@@ -16,9 +17,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Environment and secrets
 .env
+.env.*
+!.env.example
 .env.development.local
 .env.test.local
 .env.production.local
@@ -29,14 +33,19 @@ token*.json
 
 # SQLite local databases & transaction data
 *.db
+*.db-*
 *.db-journal
 *.db-wal
 *.db-shm
 *.sqlite
 *.sqlite3
+*.sqlite-wal
+*.sqlite-shm
 
 # Backups & exported data
 backups/
+*backup*.json
+*backup*.zip
 *.backup.json
 *.backup.zip
 
@@ -52,6 +61,7 @@ android/.cxx/
 # Android signing keys & keystores
 *.keystore
 *.jks
+*.p12
 
 # Android package outputs
 *.apk
@@ -69,3 +79,4 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+

@@ -860,13 +860,13 @@ npm install -D @capacitor/cli
 npx cap init
 ```
 
-Saat `cap init`: nama aplikasi `MamaMin POS`, package ID contoh **`id.mamamin.pos`** (identitas final harus disetujui/sebaiknya dimiliki proyek dan **tidak diubah setelah release**), `webDir` = `dist` sesuai output Vite. Verifikasi `capacitor.config.ts`:
+Saat `cap init`: nama aplikasi `MamaMin POS`, package ID **`com.mamamin.pos`** (jangan diubah setelah release agar jalur update APK tetap kompatibel), `webDir` = `dist` sesuai output Vite. Verifikasi `capacitor.config.ts`:
 
 ```ts
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'id.mamamin.pos', // contoh; tetapkan sebelum release
+  appId: 'com.mamamin.pos',
   appName: 'MamaMin POS',
   webDir: 'dist',
 };
@@ -1126,7 +1126,7 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 | D07 | Aturan pembatalan sesudah pembayaran, siapa boleh membatalkan, perlu bukti refund? | Audit/operasional. | Wajib alasan void; jangan klaim refund otomatis atau kas sudah kembali. |
 | D08 | Kategori pengeluaran yang dibutuhkan (bahan, gas, gaji, kemasan, lain)? | UI expense/report. | Pakai kategori teks sederhana yang dapat dipilih/disesuaikan. |
 | D09 | Perlu rekap PDF/Excel atau cukup angka di app + CSV? | Scope ekspor laporan. | MVP angka di app; CSV opsional setelah core. |
-| D10 | Package ID resmi dan siapa pemegang signing key? | Kemampuan upgrade APK jangka panjang. | Gunakan ID contoh selama development, finalkan sebelum release. |
+| D10 | Siapa pemegang release signing key untuk `com.mamamin.pos`? | Kemampuan upgrade APK jangka panjang. | `applicationId` dikonsistenkan menjadi `com.mamamin.pos`; tetapkan pemegang keystore sebelum release. |
 | D11 | Tanggal bisnis selalu 00:00–23:59 WIB atau shift kedai bisa melintasi hari? | Query harian/bulanan. | Default tanggal kalender WIB; ubah hanya setelah keputusan owner. |
 
 **Cara mencatat keputusan:** isi hasil konfirmasi, tanggal, dan pihak yang mengonfirmasi di tabel ini atau log singkat di bawah. Jangan mengubah asumsi menjadi fakta tanpa bukti.
@@ -1138,6 +1138,8 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 | 2026-11-05 | Android APK, 1 HP kasir, offline-first, SQLite lokal, printer Bluetooth; owner melihat laporan di HP kasir. | Hasil brainstorming kebutuhan awal. |
 | 2026-11-05 | QRIS dicatat manual; belum integrasi gateway. | Batas MVP paling sederhana. |
 | 2026-11-05 | Harga dan mekanisme seblak belum dipastikan; perlu konfirmasi owner. | Menghindari aturan bisnis fiktif. |
+| 2026-11-06 | Android `applicationId` / Capacitor `appId` dikonsistenkan menjadi `com.mamamin.pos`; lokasi blueprint dirapikan ke `docs/PROJECT_BLUEPRINT.md`. | Konsistensi konfigurasi & dokumentasi Fase P0. |
+| 2026-11-06 | Fase P0 terverifikasi pada perangkat pengembangan fisik POCO X6 Pro 5G (`2311DRK48G`, Android 16 / SDK 36) melalui USB/ADB, termasuk cold-start tanpa Wi-Fi & data seluler. | Bukti kelulusan exit gate P0. |
 
 ---
 
