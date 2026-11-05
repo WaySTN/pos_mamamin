@@ -19,6 +19,86 @@ export type PaymentMethod = 'CASH' | 'QRIS';
 
 export type PrintAttemptResultStatus = 'SENT_TO_DEVICE' | 'FAILED' | 'UNKNOWN';
 
+/* --- Master Menu & Modifier Domain Models --- */
+
+export interface Category {
+  readonly id: string;
+  readonly name: string;
+  readonly sortOrder: number;
+  readonly isActive: boolean;
+  readonly createdAtMs: number;
+  readonly updatedAtMs: number;
+  readonly productCount?: number;
+}
+
+export interface ProductOption {
+  readonly id: string;
+  readonly groupId: string;
+  readonly name: string;
+  readonly unitPriceRupiah: number;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
+}
+
+export interface OptionGroup {
+  readonly id: string;
+  readonly name: string;
+  readonly minSelected: number;
+  readonly maxSelected: number | null;
+  readonly sortOrder: number;
+  readonly isActive: boolean;
+  readonly options: readonly ProductOption[];
+}
+
+export interface Product {
+  readonly id: string;
+  readonly categoryId: string;
+  readonly name: string;
+  readonly sku: string | null;
+  readonly pricingMode: PricingMode;
+  readonly basePriceRupiah: number;
+  readonly isActive: boolean;
+  readonly isAvailable: boolean;
+  readonly sortOrder: number;
+  readonly createdAtMs: number;
+  readonly updatedAtMs: number;
+}
+
+export interface ProductWithDetails extends Product {
+  readonly categoryName: string;
+  readonly optionGroups: readonly OptionGroup[];
+}
+
+/* --- Cart Domain Models --- */
+
+export interface SelectedOptionInput {
+  readonly optionId: string;
+  readonly optionName: string;
+  readonly unitPriceRupiah: number;
+  readonly quantityPerPortion: number;
+}
+
+export interface CartLineItem {
+  readonly lineId: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly baseUnitPriceRupiah: number;
+  readonly quantity: number;
+  readonly options: readonly SelectedOptionInput[];
+  readonly unitTotalRupiah: number;
+  readonly lineTotalRupiah: number;
+  readonly notes: string | null;
+}
+
+export interface CartDraft {
+  readonly items: readonly CartLineItem[];
+  readonly totalQuantity: number;
+  readonly subtotalRupiah: number;
+  readonly grandTotalRupiah: number;
+}
+
+/* --- Transaction & Snapshot Domain Models --- */
+
 export interface SavedTransactionItemOption {
   readonly id: string;
   readonly transactionItemId: string;

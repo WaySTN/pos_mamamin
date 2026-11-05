@@ -1160,6 +1160,7 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 | 2026-11-06 | Fase P0 terverifikasi pada perangkat pengembangan fisik POCO X6 Pro 5G (`2311DRK48G`, Android 16 / SDK 36) melalui USB/ADB, termasuk cold-start tanpa Wi-Fi & data seluler. | Bukti kelulusan exit gate P0. |
 | 2026-11-06 | Fase P1 SQLite Native (`@capacitor-community/sqlite@8.1.1`), migrasi skema v1 (12 tabel, 7 indeks, `PRAGMA foreign_keys = ON`), transaksi atomik/rollback, dan persistensi data lintas `am force-stop` + *cold start* offline lulus verifikasi pada POCO X6 Pro 5G (`mamamin_posSQLite.db`). | Bukti kelulusan exit gate SQLite Native P1. |
 | 2026-11-06 | Pengujian printer fisik 58 mm ditangguhkan sementara karena perangkat belum tersedia (`PENDING HARDWARE VERIFICATION`). Fondasi `PrinterAdapter`, `MockPrinterAdapter`, `ReceiptService`, dan formatter/preview struk 58 mm dari transaksi SQLite selesai; fitur P2–P5 dilanjutkan tanpa mengklaim cetak fisik berhasil. | Penyesuaian roadmap agar pengembangan Core POS tidak terhambat sambil menjaga kejujuran status hardware. |
+| 2026-11-06 | Fase P2 (Master Kategori, Produk, Modifier/Topping, Keranjang Kasir Mobile-First) terverifikasi end-to-end: 30 automated tests (Vitest) + live APK di POCO X6 Pro 5G via USB/ADB. Data katalog & grup opsi tersimpan di SQLite native, sinkronisasi offline instan, toggle ketersediaan real-time, dan kalkulasi pure integer Rupiah tanpa floating-point. | Bukti kelulusan exit gate Fase P2. |
 
 ---
 

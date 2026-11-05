@@ -42,3 +42,19 @@ export function formatPlainRupiahDigits(amountRupiah: number): string {
   assertNonNegativeIntegerRupiah(amountRupiah);
   return String(amountRupiah).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
+
+/**
+ * Mengurai string input dari formulir numerik menjadi integer Rupiah non-negatif.
+ * Contoh: "15.000" atau "Rp 15.000" -> 15000.
+ */
+export function parseRupiahInput(raw: string): number {
+  const digitsOnly = raw.replace(/\D/g, '');
+  if (!digitsOnly) {
+    return 0;
+  }
+  const parsed = Number.parseInt(digitsOnly, 10);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) {
+    return 0;
+  }
+  return parsed;
+}
