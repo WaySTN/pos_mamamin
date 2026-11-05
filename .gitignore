@@ -1,0 +1,71 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+*.pem
+*.key
+token*.json
+
+# SQLite local databases & transaction data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Backups & exported data
+backups/
+*.backup.json
+*.backup.zip
+
+# Android build outputs & local config (do NOT ignore entire android/ directory)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/.cxx/
+
+# Android signing keys & keystores
+*.keystore
+*.jks
+
+# Android package outputs
+*.apk
+*.aab
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
