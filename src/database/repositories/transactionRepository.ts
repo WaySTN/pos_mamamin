@@ -344,6 +344,7 @@ export class TransactionRepository {
     filter: {
       readonly dateFilter?: 'TODAY' | 'LAST_7_DAYS' | 'ALL';
       readonly specificBusinessDate?: string;
+      readonly dateRange?: { readonly startDate: string; readonly endDate: string };
       readonly status?: TransactionStatus;
       readonly searchReceipt?: string;
       readonly limit?: number;
@@ -359,7 +360,10 @@ export class TransactionRepository {
       conditions.push("business_date NOT LIKE 'DIAG-%'");
     }
 
-    if (filter.specificBusinessDate) {
+    if (filter.dateRange) {
+      conditions.push('business_date >= ? AND business_date <= ?');
+      params.push(filter.dateRange.startDate, filter.dateRange.endDate);
+    } else if (filter.specificBusinessDate) {
       conditions.push('business_date = ?');
       params.push(filter.specificBusinessDate);
     } else if (filter.dateFilter === 'TODAY') {

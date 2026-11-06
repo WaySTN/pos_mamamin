@@ -3,6 +3,7 @@ import { formatDateTimeWib, getBusinessDateWib } from '../../src/domain/dates';
 import {
   assertNonNegativeIntegerRupiah,
   formatRupiah,
+  formatSignedRupiah,
   isNonNegativeIntegerRupiah,
 } from '../../src/domain/money';
 
@@ -11,6 +12,12 @@ describe('domain/money invariants', () => {
     expect(formatRupiah(0)).toBe('Rp0');
     expect(formatRupiah(10_000)).toBe('Rp10.000');
     expect(formatRupiah(16_000)).toBe('Rp16.000');
+  });
+
+  it('formats signed integer Rupiah for net cash differences', () => {
+    expect(formatSignedRupiah(0)).toBe('Rp0');
+    expect(formatSignedRupiah(24_000)).toBe('Rp24.000');
+    expect(formatSignedRupiah(-10_000)).toBe('-Rp10.000');
   });
 
   it('rejects negative and floating-point amounts', () => {

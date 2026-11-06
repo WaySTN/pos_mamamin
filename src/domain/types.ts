@@ -152,3 +152,92 @@ export interface StoreIdentitySettings {
   readonly storeAddress: string | null;
   readonly footerNote: string;
 }
+
+/* --- Expense Domain Models (P4) --- */
+
+export type ExpenseStatus = 'ACTIVE' | 'VOID';
+
+export interface ExpenseRecord {
+  readonly id: string;
+  readonly occurredAtMs: number;
+  readonly businessDate: string;
+  readonly category: string;
+  readonly amountRupiah: number;
+  readonly notes: string;
+  readonly status: ExpenseStatus;
+  readonly voidReason: string | null;
+  readonly voidedAtMs: number | null;
+  readonly createdAtMs: number;
+}
+
+export interface CategoryExpenseSummary {
+  readonly category: string;
+  readonly count: number;
+  readonly totalAmountRupiah: number;
+}
+
+/* --- Sales & Financial Report Models (P4) --- */
+
+export type ReportPeriodType =
+  | 'TODAY'
+  | 'YESTERDAY'
+  | 'LAST_7_DAYS'
+  | 'THIS_MONTH'
+  | 'CUSTOM';
+
+export interface ReportDateRange {
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly label: string;
+}
+
+export interface SalesReportSummary {
+  readonly periodLabel: string;
+  readonly startDate: string;
+  readonly endDate: string;
+
+  // Penjualan (PAID only)
+  readonly totalGrossOmzetRupiah: number;
+  readonly paidTransactionCount: number;
+  readonly voidTransactionCount: number;
+
+  // Metode Pembayaran
+  readonly cashRevenueRupiah: number;
+  readonly cashTransactionCount: number;
+  readonly qrisRevenueRupiah: number;
+  readonly qrisTransactionCount: number;
+
+  // Pengeluaran Kas Kecil (ACTIVE only)
+  readonly activeExpenseTotalRupiah: number;
+  readonly activeExpenseCount: number;
+  readonly voidExpenseCount: number;
+
+  // Selisih Sederhana Kas Operasional (Omzet - Pengeluaran)
+  readonly netOperatingCashRupiah: number;
+
+  // Estimasi Kas Tunai Laci (Uang Tunai Masuk - Pengeluaran Tunai)
+  readonly estimatedCashDrawerRupiah: number;
+}
+
+export interface TopProductSummary {
+  readonly productName: string;
+  readonly totalQuantity: number;
+  readonly totalSalesRupiah: number;
+}
+
+export interface TopOptionSummary {
+  readonly optionName: string;
+  readonly totalQuantity: number;
+  readonly totalSalesRupiah: number;
+}
+
+export interface DailyReportRow {
+  readonly businessDate: string;
+  readonly paidTransactionsCount: number;
+  readonly omzetRupiah: number;
+  readonly cashRupiah: number;
+  readonly qrisRupiah: number;
+  readonly expenseRupiah: number;
+  readonly netCashRupiah: number;
+}
+

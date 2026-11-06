@@ -35,6 +35,22 @@ export function formatRupiah(amountRupiah: number): string {
 }
 
 /**
+ * Format angka Rupiah yang dapat bernilai negatif (untuk selisih kas / arus kas operasional).
+ * Contoh: -10000 -> "-Rp10.000", 15000 -> "Rp15.000".
+ */
+export function formatSignedRupiah(amountRupiah: number): string {
+  if (!Number.isSafeInteger(amountRupiah)) {
+    throw new RangeError(
+      `amountRupiah harus berupa safe integer, diterima: ${String(amountRupiah)}`,
+    );
+  }
+  if (amountRupiah < 0) {
+    return `-Rp${rupiahNumberFormatter.format(Math.abs(amountRupiah))}`;
+  }
+  return `Rp${rupiahNumberFormatter.format(amountRupiah)}`;
+}
+
+/**
  * Format angka Rupiah murni ASCII dengan pemisah ribuan titik (mis. `16.000`)
  * tanpa karakter spasi non-ASCII agar aman pada codepage ESC/POS 58 mm.
  */

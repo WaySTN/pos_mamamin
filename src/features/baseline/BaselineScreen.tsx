@@ -12,6 +12,7 @@ import { P1DiagnosticPanel } from '../diagnostics/P1DiagnosticPanel';
 import type { P1DiagnosticsViewModel } from '../diagnostics/useP1Diagnostics';
 import { HistoryScreen } from '../history/HistoryScreen';
 import { MenuManagementScreen } from '../products/MenuManagementScreen';
+import { ReportsScreen } from '../reports/ReportsScreen';
 
 interface BaselineScreenProps {
   readonly activeRoute: AppRouteId;
@@ -97,17 +98,17 @@ export function BaselineScreen({
     {
       name: 'UI React + TypeScript + Tailwind + Capacitor',
       status: 'ready',
-      statusLabel: 'Aktif (P0–P2)',
+      statusLabel: 'Aktif (P0–P4)',
       detail:
         'Bundle lokal dimuat dari dalam APK tanpa ketergantungan server atau jaringan internet.',
     },
     sqliteStatus,
     {
-      name: 'Master Menu & Keranjang Kasir',
+      name: 'Core POS (Katalog, Checkout, Void, Laporan & Kas)',
       status: 'ready',
-      statusLabel: 'Aktif (Fase P2)',
+      statusLabel: 'Aktif (P2–P4)',
       detail:
-        'Katalog produk dinamis, opsi/topping seblak, dan kalkulasi keranjang integer Rupiah telah aktif.',
+        'Katalog dinamis, checkout tunai/QRIS, snapshot transaksi, void beralasan, kas kecil, dan laporan keuangan.',
     },
     {
       name: 'Koneksi Bluetooth Classic SPP & Cetak Fisik 58 mm',
@@ -127,8 +128,14 @@ export function BaselineScreen({
   }
 
   // Route 2: Riwayat Transaksi (P3)
+  // Route 3: Riwayat Transaksi (P3)
   if (activeRoute === 'transactions') {
     return <HistoryScreen />;
+  }
+
+  // Route 4: Laporan & Kas Operasional (P4)
+  if (activeRoute === 'reports') {
+    return <ReportsScreen />;
   }
 
   // Route 2: Lainnya (Kelola Menu P2 & Diagnostik P1)
