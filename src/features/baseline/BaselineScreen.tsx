@@ -13,6 +13,7 @@ import type { P1DiagnosticsViewModel } from '../diagnostics/useP1Diagnostics';
 import { HistoryScreen } from '../history/HistoryScreen';
 import { MenuManagementScreen } from '../products/MenuManagementScreen';
 import { ReportsScreen } from '../reports/ReportsScreen';
+import { BackupRestoreView } from '../settings/BackupRestoreView';
 
 interface BaselineScreenProps {
   readonly activeRoute: AppRouteId;
@@ -28,7 +29,7 @@ interface SubsystemStatusItem {
   readonly detail: string;
 }
 
-type MoreScreenView = 'menu_management' | 'diagnostics_p1';
+type MoreScreenView = 'menu_management' | 'backup_restore' | 'diagnostics_p1';
 
 export function BaselineScreen({
   activeRoute,
@@ -104,11 +105,18 @@ export function BaselineScreen({
     },
     sqliteStatus,
     {
-      name: 'Core POS (Katalog, Checkout, Void, Laporan & Kas)',
+      name: 'Core POS & Laporan (Katalog, Checkout, Void, Kas & Laporan)',
       status: 'ready',
       statusLabel: 'Aktif (P2–P4)',
       detail:
         'Katalog dinamis, checkout tunai/QRIS, snapshot transaksi, void beralasan, kas kecil, dan laporan keuangan.',
+    },
+    {
+      name: 'Keamanan Data & Pemulihan (Full Backup & Restore)',
+      status: 'ready',
+      statusLabel: 'Aktif (P5)',
+      detail:
+        'Full JSON snapshot 12 tabel, integritas checksum SHA-256, Android sharesheet/download, dan restore atomik tervalidasi.',
     },
     {
       name: 'Koneksi Bluetooth Classic SPP & Cetak Fisik 58 mm',
@@ -138,12 +146,12 @@ export function BaselineScreen({
     return <ReportsScreen />;
   }
 
-  // Route 2: Lainnya (Kelola Menu P2 & Diagnostik P1)
+  // Route 2: Lainnya (Kelola Menu P2, Backup P5 & Diagnostik P1)
   if (activeRoute === 'more') {
     return (
       <div className="space-y-3 pb-20">
         {/* Toggle View di Tab Lainnya */}
-        <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 text-xs font-bold shadow-xs">
+        <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-white p-1 text-xs font-bold shadow-xs">
           <button
             type="button"
             onClick={() => setMoreView('menu_management')}
@@ -153,7 +161,18 @@ export function BaselineScreen({
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            🍜 Kelola Menu (P2)
+            🍜 Menu (P2)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMoreView('backup_restore')}
+            className={`min-h-10 rounded-lg transition-colors ${
+              moreView === 'backup_restore'
+                ? 'bg-orange-700 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            🛡️ Backup (P5)
           </button>
           <button
             type="button"
@@ -164,12 +183,14 @@ export function BaselineScreen({
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            ⚙️ Diagnostik &amp; Struk (P1)
+            ⚙️ Diagnostik (P1)
           </button>
         </div>
 
         {moreView === 'menu_management' ? (
           <MenuManagementScreen />
+        ) : moreView === 'backup_restore' ? (
+          <BackupRestoreView />
         ) : (
           <div className="space-y-4">
             <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">

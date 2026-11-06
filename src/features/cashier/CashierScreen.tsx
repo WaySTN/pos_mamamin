@@ -320,7 +320,7 @@ export function CashierScreen({ onNavigate }: CashierScreenProps) {
 
       {/* Sticky Bottom Cart Bar */}
       {cartManager.cart.totalQuantity > 0 ? (
-        <div className="fixed bottom-16 left-0 right-0 z-30 px-4">
+        <div className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 px-4">
           <div className="mx-auto flex max-w-lg items-center justify-between rounded-2xl border border-orange-800/20 bg-orange-800 px-4 py-3 text-white shadow-xl">
             <div className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-sm font-bold">
