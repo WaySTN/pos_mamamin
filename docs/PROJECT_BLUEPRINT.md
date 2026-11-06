@@ -267,18 +267,41 @@ QRIS: paid_amount = grand_total, change = 0 (setelah konfirmasi manual)
 
 Semua operand harus berupa **integer rupiah**, qty integer positif, dan perhitungan diuji terpisah dari React UI. Jangan memakai `parseFloat` uang atau menyimpan harga dalam string `Rp...` pada DB.
 
-### 8.2 Contoh konfirmasi internal (bukan aturan seblak owner)
+### 8.2 Konfirmasi resmi katalog & aturan seblak owner (2026-11-06)
 
-- `Mie Ayam` 1 × Rp10.000 + `Es Teh` 2 × Rp3.000 = Rp16.000.
-- Tunai Rp20.000 → kembalian Rp4.000.
-- `Seblak Original` hipotetis Rp5.000 + 2 bakso × Rp2.000 + 1 ceker × Rp3.000 = **Rp12.000 per porsi**; contoh ini **jangan digunakan sebagai harga riil**.
-- Jika dua porsi memiliki topping berbeda, simpan dua row `transaction_items` berqty 1 untuk mempertahankan opsi masing-masing.
+Berdasarkan konfirmasi langsung owner, katalog resmi dan aturan usaha ditetapkan sebagai berikut:
 
-### 8.3 Pemodelan seblak yang belum dikonfirmasi
+1. **Mie Ayam & Yamin:**
+   - `Mie Ayam Biasa`: Rp10.000 (tanpa level kepedasan). Opsi topping tambahan: Telur (+Rp3.000), Ceker (+Rp3.000), Kepala (+Rp3.000), Pentol (+Rp3.000), Sosis (+Rp2.000).
+   - `Mie Yamin`: Rp10.000. Pilihan level kepedasan (wajib pilih 1): *Tidak Pedas*, *Sedang*, *Pedas* (Rp0). Opsi topping tambahan sama dengan Mie Ayam Biasa.
+2. **Seblak Prasmanan:**
+   - Biaya dasar kuah/masak: **Rp3.000** (otomatis masuk sebagai base price produk).
+   - Akumulasi topping: ditambahkan langsung ke harga dasar kuah. Contoh: pelanggan mengambil topping senilai Rp10.000, total harga per porsi menjadi **Rp13.000** (`Rp3.000 + Rp10.000`).
+   - Pilihan level kepedasan: Level 0 (Tidak Pedas), Level 1 (Sedang), Level 2 (Pedas), Level 3 (Ekstra Pedas) (Rp0).
+   - Daftar 14 Topping Resmi:
+     - Aneka Kerupuk Seblak: +Rp1.000
+     - Mie: +Rp1.000
+     - Sawi Hijau: +Rp1.000
+     - Jamur Enoki: +Rp1.000
+     - Cireng: +Rp1.000
+     - Sosis Merah: +Rp1.500
+     - Ceker: +Rp2.000
+     - Chikuwa: +Rp2.000
+     - Crab Stick: +Rp2.000
+     - Otak-Otak: +Rp2.000
+     - Dumpling Ayam: +Rp2.000
+     - Dumpling Keju: +Rp2.000
+     - Sosis Bakar: +Rp3.000
+     - Telur: +Rp3.000
+3. **Jajanan:**
+   - Jajanan Biasa (@Rp1.000): Risol Mayo Biasa, Risol Sayur, Cireng Ayam, Pisang Coklat.
+   - Risol Jumbo (@Rp3.000): Risol Ayam Jumbo, Risol Ayam Pedas Jumbo, Risol Mayo Jumbo, Risol Mentai Jumbo, Risol Coklat Jumbo, Risol Matcha Jumbo.
+4. **Minuman:**
+   - Es Teh: Rp3.000
+   - Pop Ice: Rp4.000
+   - Es Jeruk, Es Capcin, Es Milo, Es Hilo, Es Good Day, Es Beng-Beng: @Rp5.000.
 
-Terdapat beberapa kemungkinan aturan usaha: jumlah topping per item, paket tetap, atau berat. **Jangan menebak model seblak.** Rancang domain sehingga mode `FIXED` dan `BASE_PLUS_OPTIONS` bisa diimplementasikan; jika owner memilih berbasis berat, tambahkan desain khusus di fase keputusan, bukan menyisipkan asumsi diam-diam ke schema.
-
-Untuk POC, kasir bisa menguji alur modifier dengan **data dummy berlabel contoh**, tetapi jangan mengaktifkan produk Seblak dalam katalog produksi sebelum nominal/aturan disahkan.
+Jika dua porsi Seblak memiliki topping berbeda, simpan dua baris `transaction_items` terpisah berkuantitas 1 untuk mempertahankan snapshot opsi masing-masing porsi.
 
 ---
 
@@ -1133,11 +1156,11 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 
 ## 20. Open decisions / hal yang harus dikonfirmasi (jangan dikarang)
 
-| ID | Pertanyaan | Dampak | Strategi aman sebelum dijawab |
+| ID | Pertanyaan | Dampak | Status & Hasil Konfirmasi Owner (2026-11-06) |
 | --- | --- | --- | --- |
-| D01 **Kritis** | Seblak dihitung per topping/pcs, paket, berdasarkan berat, atau aturan lain? | Harga, model option, UI checkout. | Siapkan struktur modifier; **jangan aktifkan harga seblak produksi**. |
-| D02 **Kritis** | Daftar topping seblak, satuan, harga, kuantitas maksimum, level pedas, dan apakah ada harga dasar? | Master options dan validasi. | Tidak membuat harga dummy menjadi default resmi. |
-| D03 | Harga dan ketersediaan semua menu pada foto masih berlaku? | Seed katalog resmi. | Data foto hanya referensi awal dan dapat diedit. |
+| D01 **Selesai** | Seblak dihitung per topping/pcs, paket, berdasarkan berat, atau aturan lain? | Harga, model option, UI checkout. | **Terkonfirmasi:** Harga dasar kuah/masak Rp3.000 + akumulasi harga topping yang dipilih. |
+| D02 **Selesai** | Daftar topping seblak, satuan, harga, kuantitas maksimum, level pedas, dan apakah ada harga dasar? | Master options dan validasi. | **Terkonfirmasi:** 14 topping resmi (Kerupuk 1k, Mie 1k, Sawi 1k, Enoki 1k, Cireng 1k, Sosis Merah 1.5k, Ceker 2k, Chikuwa 2k, Crab Stick 2k, Otak-otak 2k, Dumpling Ayam 2k, Dumpling Keju 2k, Sosis Bakar 3k, Telur 3k) + Level Pedas 0–3 (Rp0). |
+| D03 **Selesai** | Harga dan ketersediaan semua menu masih berlaku? | Seed katalog resmi. | **Terkonfirmasi:** Mie Ayam Biasa (10k), Mie Yamin (10k, level pedas), Minuman (3k, 4k, 5k), Jajanan Biasa (1k), Risol Jumbo (3k). Total 21 produk resmi. |
 | D04 | Kasir menggunakan HP Android versi/merk apa? | Min API, performa, pairing, layar. | Gunakan Android target sesuai toolchain; uji HP aktual sebelum final. |
 | D05 **Kritis release** | Printer thermal merek/model apa yang dibeli? Benar Bluetooth Classic SPP/ESC-POS? | Integrasi native dan layout struk. | Buat adapter dan formatter; tahan klaim uji fisik sampai tersedia. |
 | D06 | Nama, alamat, kontak, tagline, logo di struk? | Pengaturan dan format receipt. | Default tampil nama `MamaMin`; detail lain opsional. |
@@ -1163,6 +1186,7 @@ Berikan owner: APK release teruji, model printer yang kompatibel, prosedur pairi
 | 2026-11-06 | Fase P2 (Master Kategori, Produk, Modifier/Topping, Keranjang Kasir Mobile-First) terverifikasi end-to-end: 30 automated tests (Vitest) + live APK di POCO X6 Pro 5G via USB/ADB. Data katalog & grup opsi tersimpan di SQLite native, sinkronisasi offline instan, toggle ketersediaan real-time, dan kalkulasi pure integer Rupiah tanpa floating-point. | Bukti kelulusan exit gate Fase P2. |
 | 2026-11-06 | Fase P3 (Checkout, Pembayaran Tunai & QRIS Manual, Riwayat Transaksi, Void Beralasan, & Struk 58mm) terverifikasi end-to-end: 54 automated tests (Vitest) + live APK di POCO X6 Pro 5G via USB/ADB. Transaksi atomik SQLite `withTransaction`, nomor struk berurutan harian WIB (`MM-YYYYMMDD-NNNN`), snapshot harga beku, proteksi double-submit, layar riwayat dengan filter tanggal/status, pembatalan status VOID yang otomatis mengeluarkan transaksi dari omzet, dan persistensi data lintas force-stop terbukti 100%. | Bukti kelulusan exit gate Fase P3. |
 | 2026-11-06 | Fase P4 (Pengeluaran Operasional & Rekap Laporan Bisnis) terverifikasi end-to-end: 82 automated tests (Vitest) + live APK di POCO X6 Pro 5G via USB/ADB. Pencatatan kas kecil (kategori, keterangan, nominal positif), pembatalan pengeluaran (VOID) dengan alasan, isolasi VOID dari hitungan biaya, laporan ringkasan penjualan (Omzet PAID, Tunai vs QRIS, pengeluaran kas kecil, selisih operasional integer bertanda `formatSignedRupiah`, estimasi uang laci kasir, disclaimer edukasi non-HPP), filter periode WIB (Hari Ini, Kemarin, 7 Hari, Bulan Ini, Kustom), ranking menu/topping terlaris, ekspor 3 jenis CSV aman dari formula injection, dan kelulusan skenario referensi §11.4 terbukti 100%. | Bukti kelulusan exit gate Fase P4. |
+| 2026-11-06 | Konfirmasi resmi owner untuk katalog produksi & aturan seblak (D01, D02, D03): Mie Ayam Biasa (Rp10k, topping Rp2k–3k), Mie Yamin (Rp10k, level pedas Rp0 + topping), Seblak Prasmanan (biaya dasar masak/kuah Rp3k + 14 topping resmi Rp1k–3k), Jajanan Biasa (@Rp1k), Risol Jumbo (@Rp3k), Minuman (Rp3k, Rp4k, @Rp5k). Total 4 Kategori, 4 Grup Opsi (26 opsi), dan 21 Produk resmi diimplementasikan ke `catalogTemplate.ts` dan diuji secara otomatis (85 tests passing). | Keputusan owner; data draf digantikan data resmi. |
 
 ---
 

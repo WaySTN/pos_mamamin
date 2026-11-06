@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { seedStarterCategoriesIfEmpty } from '../../database/repositories/catalogTemplate';
+import {
+  applyOfficialMamaMinCatalog,
+  seedStarterCategoriesIfEmpty,
+} from '../../database/repositories/catalogTemplate';
 import { CategoryRepository } from '../../database/repositories/categoryRepository';
 import { OptionGroupRepository } from '../../database/repositories/optionGroupRepository';
 import { ProductRepository } from '../../database/repositories/productRepository';
@@ -36,6 +39,7 @@ export function MenuManagementScreen() {
   const [editingCategory, setEditingCategory] = useState<Category | null | 'NEW'>(null);
   const [editingProduct, setEditingProduct] = useState<ProductWithDetails | null | 'NEW'>(null);
   const [editingGroup, setEditingGroup] = useState<OptionGroup | null | 'NEW'>(null);
+  const [showApplyOfficialModal, setShowApplyOfficialModal] = useState<boolean>(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -101,6 +105,20 @@ export function MenuManagementScreen() {
     }
   };
 
+  const handleApplyOfficialCatalog = async () => {
+    setIsLoading(true);
+    setShowApplyOfficialModal(false);
+    try {
+      const res = await applyOfficialMamaMinCatalog(databaseService, { forceReplace: true });
+      await loadData();
+      setFeedback(res.message ?? 'Menu resmi MamaMin berhasil diterapkan.');
+    } catch (err) {
+      setFeedback(err instanceof Error ? err.message : 'Gagal menerapkan menu resmi MamaMin.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleToggleProductAvailability = async (product: ProductWithDetails) => {
     try {
       await productRepo.toggleAvailability(product.id, !product.isAvailable);
@@ -141,15 +159,25 @@ export function MenuManagementScreen() {
           </p>
         </div>
 
-        {categories.length === 0 ? (
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={handleSeedTemplate}
-            className="rounded-lg bg-orange-700 px-3 py-1.5 text-xs font-bold text-white active:bg-orange-800"
+            onClick={() => setShowApplyOfficialModal(true)}
+            className="rounded-lg border border-orange-300 bg-orange-50 px-2.5 py-1.5 text-xs font-bold text-orange-900 active:bg-orange-100"
           >
-            Muat Draf Menu MamaMin
+            📋 Terapkan Menu Resmi
           </button>
-        ) : null}
+
+          {categories.length === 0 ? (
+            <button
+              type="button"
+              onClick={handleSeedTemplate}
+              className="rounded-lg bg-orange-700 px-3 py-1.5 text-xs font-bold text-white active:bg-orange-800"
+            >
+              Muat Menu Resmi
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* Banner Feedback */}
@@ -561,6 +589,57 @@ export function MenuManagementScreen() {
               : undefined
           }
         />
+      ) : null}
+
+      {/* Modal Konfirmasi Penerapan Menu Resmi */}
+      {showApplyOfficialModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl">
+            <h3 className="text-base font-bold text-slate-900">
+              Terapkan Menu Resmi MamaMin?
+            </h3>
+            <p className="mt-2 text-xs text-slate-600">
+              Katalog akan diperbarui ke menu resmi Kedai MamaMin hasil konfirmasi owner. Jika ada transaksi lama, menu lama akan dinonaktifkan dengan aman.
+            </p>
+
+            <div className="mt-3 space-y-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
+              <p className="font-semibold text-slate-900">
+                🍜 4 Kategori &amp; 21 Produk Resmi:
+              </p>
+              <ul className="list-inside list-disc space-y-1 text-slate-600">
+                <li>
+                  <span className="font-medium text-slate-800">Mie Ayam &amp; Yamin:</span> Mie Ayam Biasa (Rp10k), Mie Yamin (Rp10k, level pedas). Topping mie: Telur, Ceker, Kepala, Pentol (@Rp3k), Sosis (+Rp2k).
+                </li>
+                <li>
+                  <span className="font-medium text-slate-800">Seblak Prasmanan:</span> Biaya dasar Rp3.000 + 14 pilihan topping resmi (Kerupuk 1k, Mie 1k, Sawi 1k, Enoki 1k, Cireng 1k, Sosis Merah 1.5k, Ceker 2k, Frozen Food 2k, Sosis Bakar 3k, Telur 3k).
+                </li>
+                <li>
+                  <span className="font-medium text-slate-800">Jajanan:</span> 4 Risol Biasa/Cireng/Piscok (@Rp1k) &amp; 6 Risol Jumbo (@Rp3k).
+                </li>
+                <li>
+                  <span className="font-medium text-slate-800">Minuman:</span> Es Teh (Rp3k), Pop Ice (Rp4k), Es Jeruk, Capcin, Milo, Hilo, Good Day, Beng-Beng (@Rp5k).
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowApplyOfficialModal(false)}
+                className="flex-1 rounded-xl border border-slate-300 py-2 text-xs font-semibold text-slate-700 active:bg-slate-100"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyOfficialCatalog}
+                className="flex-1 rounded-xl bg-orange-700 py-2 text-xs font-bold text-white shadow-xs active:bg-orange-800"
+              >
+                Terapkan Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </div>
   );

@@ -9,6 +9,7 @@ import {
   ProductRepository,
 } from '../../src/database/repositories/productRepository';
 import {
+  applyOfficialMamaMinCatalog,
   seedStarterCategoriesIfEmpty,
 } from '../../src/database/repositories/catalogTemplate';
 import {
@@ -318,8 +319,8 @@ describe('Catalog Repositories (Category, OptionGroup, Product, Template)', () =
     });
   });
 
-  describe('seedStarterCategoriesIfEmpty', () => {
-    it('seeds starter categories, option groups, and products when empty, and is idempotent', async () => {
+  describe('seedStarterCategoriesIfEmpty and applyOfficialMamaMinCatalog', () => {
+    it('seeds official MamaMin menu (4 categories, 4 option groups, 21 products) and is idempotent', async () => {
       const db = createMemoryDb();
       await db.initialize();
       const catRepo = new CategoryRepository(db);
@@ -328,8 +329,8 @@ describe('Catalog Repositories (Category, OptionGroup, Product, Template)', () =
 
       const result1 = await seedStarterCategoriesIfEmpty(db);
       expect(result1.categoriesCreated).toBe(4);
-      expect(result1.optionGroupsCreated).toBe(3);
-      expect(result1.productsCreated).toBe(7);
+      expect(result1.optionGroupsCreated).toBe(4);
+      expect(result1.productsCreated).toBe(21);
 
       const categories = await catRepo.list();
       expect(categories.map((c) => c.name)).toEqual([
@@ -340,10 +341,48 @@ describe('Catalog Repositories (Category, OptionGroup, Product, Template)', () =
       ]);
 
       const groups = await optRepo.list();
-      expect(groups.length).toBe(3);
+      expect(groups.length).toBe(4);
+      expect(groups.map((g) => g.name)).toEqual([
+        'Level Pedas Mie Yamin',
+        'Topping Tambahan Mie',
+        'Level Pedas Seblak',
+        'Pilihan Topping Seblak Prasmanan',
+      ]);
+
+      // Verifikasi grup opsi Mie Yamin (min: 1, max: 1)
+      const grpYamin = groups.find((g) => g.name === 'Level Pedas Mie Yamin');
+      expect(grpYamin?.minSelected).toBe(1);
+      expect(grpYamin?.maxSelected).toBe(1);
+      expect(grpYamin?.options.map((o) => o.name)).toEqual(['Tidak Pedas', 'Sedang', 'Pedas']);
+
+      // Verifikasi Topping Seblak Prasmanan (14 topping)
+      const grpSeblak = groups.find((g) => g.name === 'Pilihan Topping Seblak Prasmanan');
+      expect(grpSeblak?.options.length).toBe(14);
+      const optCeker = grpSeblak?.options.find((o) => o.name === 'Ceker');
+      expect(optCeker?.unitPriceRupiah).toBe(2000);
+      const optSosisMerah = grpSeblak?.options.find((o) => o.name === 'Sosis Merah');
+      expect(optSosisMerah?.unitPriceRupiah).toBe(1500);
+      const optTelur = grpSeblak?.options.find((o) => o.name === 'Telur');
+      expect(optTelur?.unitPriceRupiah).toBe(3000);
 
       const products = await prodRepo.list();
-      expect(products.length).toBe(7);
+      expect(products.length).toBe(21);
+
+      // Verifikasi Seblak Prasmanan base price 3.000
+      const seblakProd = products.find((p) => p.name === 'Seblak Prasmanan');
+      expect(seblakProd?.basePriceRupiah).toBe(3000);
+      expect(seblakProd?.pricingMode).toBe('BASE_PLUS_OPTIONS');
+      expect(seblakProd?.optionGroups.length).toBe(2);
+
+      // Verifikasi Mie Ayam Biasa (tanpa level pedas) vs Mie Yamin (dengan level pedas)
+      const mieAyam = products.find((p) => p.name === 'Mie Ayam Biasa');
+      expect(mieAyam?.basePriceRupiah).toBe(10000);
+      expect(mieAyam?.optionGroups.length).toBe(1);
+      expect(mieAyam?.optionGroups[0]?.name).toBe('Topping Tambahan Mie');
+
+      const mieYamin = products.find((p) => p.name === 'Mie Yamin');
+      expect(mieYamin?.basePriceRupiah).toBe(10000);
+      expect(mieYamin?.optionGroups.length).toBe(2);
 
       // Idempotency check: running again must return 0 and not duplicate
       const result2 = await seedStarterCategoriesIfEmpty(db);
@@ -353,6 +392,23 @@ describe('Catalog Repositories (Category, OptionGroup, Product, Template)', () =
 
       const categoriesAfter = await catRepo.list();
       expect(categoriesAfter.length).toBe(4);
+    });
+
+    it('can forceReplace catalog cleanly when no transactions exist', async () => {
+      const db = createMemoryDb();
+      await db.initialize();
+      const prodRepo = new ProductRepository(db);
+
+      await seedStarterCategoriesIfEmpty(db);
+      expect((await prodRepo.list()).length).toBe(21);
+
+      // Jalankan force replace
+      const res = await applyOfficialMamaMinCatalog(db, { forceReplace: true });
+      expect(res.categoriesCreated).toBe(4);
+      expect(res.productsCreated).toBe(21);
+
+      const productsAfter = await prodRepo.list();
+      expect(productsAfter.length).toBe(21);
     });
   });
 });

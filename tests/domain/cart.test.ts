@@ -321,5 +321,71 @@ describe('domain/cart: Pure Calculation & Cart Invariants', () => {
     expect(warnings[0]?.cartBasePrice).toBe(10_000);
     expect(warnings[0]?.catalogBasePrice).toBe(12_000);
   });
+
+  it('correctly calculates official MamaMin Seblak Prasmanan: Rp3.000 base + Rp10.000 toppings = Rp13.000', () => {
+    // Skenario konfirmasi owner:
+    // "seblak itu biaya nya auto langsung 3k, beda samaa toping2 lain,
+    // misal nih orang menganbil toping total 10k itu nanti bayarnya 13k (soalnya 3k ini biaya masak kuah dll)"
+    const officialSeblak: ProductWithDetails = {
+      id: 'prod_seblak_official',
+      categoryId: 'cat_seblak',
+      categoryName: 'Seblak',
+      name: 'Seblak Prasmanan',
+      sku: 'SEB-01',
+      pricingMode: 'BASE_PLUS_OPTIONS',
+      basePriceRupiah: 3_000, // Biaya kuah/masak dasar
+      isActive: true,
+      isAvailable: true,
+      sortOrder: 1,
+      createdAtMs: 1000,
+      updatedAtMs: 1000,
+      optionGroups: [],
+    };
+
+    // Topping: Kerupuk (1k) + Sawi (1k) + Jamur Enoki (1k) + Telur (3k) + Ceker (2k) + Chikuwa (2k) = 10k
+    const selectedToppings: SelectedOptionInput[] = [
+      { optionId: 'opt_kerupuk', optionName: 'Kerupuk Seblak', unitPriceRupiah: 1_000, quantityPerPortion: 1 },
+      { optionId: 'opt_sawi', optionName: 'Sawi Hijau', unitPriceRupiah: 1_000, quantityPerPortion: 1 },
+      { optionId: 'opt_enoki', optionName: 'Jamur Enoki', unitPriceRupiah: 1_000, quantityPerPortion: 1 },
+      { optionId: 'opt_telur', optionName: 'Telur', unitPriceRupiah: 3_000, quantityPerPortion: 1 },
+      { optionId: 'opt_ceker', optionName: 'Ceker', unitPriceRupiah: 2_000, quantityPerPortion: 1 },
+      { optionId: 'opt_chikuwa', optionName: 'Chikuwa', unitPriceRupiah: 2_000, quantityPerPortion: 1 },
+    ];
+
+    const toppingsSum = selectedToppings.reduce(
+      (sum, opt) => sum + opt.unitPriceRupiah * opt.quantityPerPortion,
+      0,
+    );
+    expect(toppingsSum).toBe(10_000);
+
+    const unitTotal = calculateUnitTotalRupiah(officialSeblak.basePriceRupiah, selectedToppings);
+    expect(unitTotal).toBe(13_000); // 3.000 + 10.000 = 13.000
+
+    const cart = addOrIncrementCartItem([], {
+      product: officialSeblak,
+      options: selectedToppings,
+      quantity: 2, // 2 porsi seblak dengan kombinasi topping yang sama
+    });
+
+    const totals = calculateCartTotals(cart);
+    expect(totals.totalQuantity).toBe(2);
+    expect(totals.grandTotalRupiah).toBe(26_000); // 13.000 * 2 = 26.000
+  });
+
+  it('correctly calculates official Mie Ayam Biasa vs Mie Yamin pricing', () => {
+    // Mie Ayam Biasa (10k) + Telur (3k) + Ceker (3k) = 16k
+    const unitMieAyam = calculateUnitTotalRupiah(10_000, [
+      { optionId: 'opt_telur', optionName: 'Telur', unitPriceRupiah: 3_000, quantityPerPortion: 1 },
+      { optionId: 'opt_ceker', optionName: 'Ceker', unitPriceRupiah: 3_000, quantityPerPortion: 1 },
+    ]);
+    expect(unitMieAyam).toBe(16_000);
+
+    // Mie Yamin (10k) + Level Pedas Sedang (0k) + Pentol (3k) = 13k
+    const unitMieYamin = calculateUnitTotalRupiah(10_000, [
+      { optionId: 'opt_pedas_sedang', optionName: 'Sedang', unitPriceRupiah: 0, quantityPerPortion: 1 },
+      { optionId: 'opt_pentol', optionName: 'Pentol', unitPriceRupiah: 3_000, quantityPerPortion: 1 },
+    ]);
+    expect(unitMieYamin).toBe(13_000);
+  });
 });
 
